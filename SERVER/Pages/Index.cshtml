@@ -1,0 +1,32 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+
+<link rel="stylesheet" href="~/css/MyStyle.css" />
+
+<div class="top-nav">
+    <a href="/">Home</a>
+    <a href="/About">About</a>
+    <a href="/Players">Our Players</a>
+    <a href="/Games">All Games</a>
+    <a href="/">Services</a>
+</div>
+
+<div class="content-container">
+    <h1 class="welcome-text">Welcome to Half Chess Game</h1>
+    <p class="explanation-text">
+        In "Half Chess," the game board is 8 squares long as usual, but only 4 squares wide (half the width of a regular chessboard).
+        We use the right half of a standard chessboard, setting up each player with a king, a bishop, a knight, and a rook, along with pawns positioned above each of these pieces.
+
+        The game follows standard chess rules, with two key exceptions:
+         Time-Limited Moves: Each player has a set amount of time to make their move. Failure to play within the time limit results in an automatic loss.
+         Sideways Pawn Movement: Pawns can move one square horizontally (left or right) if the square is empty. However, pawns cannot capture pieces with this sideways move. This rule is designed to allow for greater strategic maneuvering.
+    </p>
+    <div class="button-container">
+        <a href="/Players/Login" class="btn btn-login">Log In</a>
+        <a href="/Players/Create" class="btn btn-signup">Sign Up</a>
+    </div>
+</div>

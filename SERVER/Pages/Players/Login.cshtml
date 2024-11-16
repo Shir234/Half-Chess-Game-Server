@@ -1,0 +1,38 @@
+﻿@page
+@model SERVER.Pages.Players.LoginModel
+@{
+    ViewData["Title"] = "Log In";
+}
+
+
+<div class="top-nav">
+    <a href="/">Home</a>
+    <a href="/About">About</a>
+    <a href="/Players">Our Players</a>
+    <a href="/">Services</a>
+</div>
+
+<div class="signup-container">
+    <h2 class="signup-title">Log-in Player Account</h2>
+    <form method="post" class="signup-form">
+
+        <div class="form-group">
+            <label asp-for="Id" class="control-label">Id</label>
+            <input asp-for="Id" type="number" min=1 max=1000 class="form-control" />
+            <span asp-validation-for="Id" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Name" class="control-label">Full Name</label>
+            <input asp-for="Name" class="form-control"/>
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="signup-button">Log In</button>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

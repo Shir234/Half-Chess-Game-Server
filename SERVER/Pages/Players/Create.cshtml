@@ -1,0 +1,53 @@
+﻿@page
+@model SERVER.Pages.Players.CreateModel
+
+@{
+    ViewData["Title"] = "Sign Up";
+}
+
+<div class="top-nav">
+    <a href="/">Home</a>
+    <a href="/About">About</a>
+    <a href="/Players">Our Players</a>
+    <a href="/">Services</a>
+</div>
+
+<div class="signup-container">
+    <h2 class="signup-title">Create Player Account</h2>
+    <form method="post" class="signup-form">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="form-group">
+            <label asp-for="TblPlayers.Id" class="control-label">Id</label>
+            <input asp-for="TblPlayers.Id" type="number" min=1 max=1000 class="form-control" />
+            <span asp-validation-for="TblPlayers.Id" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="TblPlayers.Name" class="control-label">Full Name</label>
+            <input asp-for="TblPlayers.Name" class="form-control"/>
+            <span asp-validation-for="TblPlayers.Name" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="TblPlayers.Phone" class="control-label">Phone Number</label>
+            <input asp-for="TblPlayers.Phone" class="form-control"/>
+            <span asp-validation-for="TblPlayers.Phone" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="TblPlayers.Country" class="control-label">Country</label>
+            <select asp-for="TblPlayers.Country" class="form-select" asp-items="Model.CountryList">
+                <option value="">Select a Country</option>
+            </select>
+            <span asp-validation-for="TblPlayers.Country" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="signup-button">Sign Up</button>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

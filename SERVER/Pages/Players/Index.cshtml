@@ -1,0 +1,102 @@
+﻿@page
+@model SERVER.Pages.Players.IndexModel
+
+@{
+    ViewData["Title"] = "Players Dashboard";
+}
+
+<div class="top-nav">
+    <a href="/">Home</a>
+    <a href="/About">About</a>
+    <a href="/Players">Our Players</a>
+    <a href="/">Services</a>
+</div>
+
+<div class="dashboard-container">
+    <h2 class="dashboard-title">Players Dashboard</h2>
+
+    <div class="sort-container">
+        <form method="post">
+            <div class="sort-controls">
+                <button asp-page-handler="SortDefault" , class="btn btn-login">Default Order</button>
+                <button asp-page-handler="SortAscending" , class="btn btn-login">Sort A-Z</button>
+                <button asp-page-handler="SortDescending" , class="btn btn-login">Sort Z-A</button>
+            </div>
+        </form>
+    </div>
+
+
+
+    <table class="players-table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Country</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.TblPlayers)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.Phone</td>
+                    <td>@item.Country</td>
+                    <td>
+                        <a asp-page="./Edit" asp-route-id="@item.Id" class="btn-edit">Edit</a> |
+                        <a asp-page="./Details" asp-route-id="@item.Id" class="btn-details">Details</a> |
+                        <a asp-page="./Delete" asp-route-id="@item.Id" class="btn-delete">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+
+@* <h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.TblPlayers[0].Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TblPlayers[0].Phone)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TblPlayers[0].Country)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.TblPlayers) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Phone)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Country)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table> *@
