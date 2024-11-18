@@ -19,12 +19,15 @@ namespace SERVER.Pages.Games
             _context = context;
         }
 
-        public IList<TblGames> TblGames { get;set; } = default!;
+        public IList<TblGames> TblGames { get; set; } = default!;
 
         public async Task OnGetAsync()
         {
-            TblGames = await _context.TblGames
-                .Include(t => t.Player).ToListAsync();
+            if (_context.TblGames != null)
+            {
+                TblGames = await _context.TblGames
+                    .Include(t => t.Player).ToListAsync();
+            }
         }
     }
 }

@@ -1,0 +1,48 @@
+﻿@page
+@model SERVER.Pages.Players.PlayerLastGameModel
+@{
+    ViewData["Title"] = "PlayersWith Last Game Date";
+}
+
+
+<div class="top-nav">
+    <a href="/">Home</a>
+    <a href="/About">About</a>
+    <a href="/Players">Our Players</a>
+    <a href="/Games">All Games</a>
+    <a href="/">Services</a>
+</div>
+
+<div class="dashboard-container">
+    <h2 class="dashboard-title">Players with Last Game Date</h2>
+@* 
+     <div class="sort-container">
+         <form method="post">
+             <div class="sort-controls">
+                 <button asp-page-handler="" , class="btn btn-login">Default Order</button>
+                 <button asp-page-handler="" , class="btn btn-login">Sort A-Z</button>
+                 <button asp-page-handler="" , class="btn btn-login">Sort Z-A</button>
+             </div>
+         </form>
+     </div> *@
+
+
+
+    <table class="players-table">
+        <thead>
+            <tr>
+                <th>Player Name</th>
+                <th>Last Game Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Players)
+            {
+                <tr>
+                    <td>@item.PlayerName</td>
+                    <td>@item.LastGameDate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

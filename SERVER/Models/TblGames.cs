@@ -4,7 +4,8 @@
     {
         public int Id { get; set; }
         public int PlayerId { get; set; }
-        public DateTime StartTime { get; set; }
+        public TimeOnly StartTime { get; set; }             // hh:mm:ss
+        public DateOnly Date { get; set; }       //yyyy-mm-dd
         public int Duration { get; set; }
 
 
