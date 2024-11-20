@@ -23,7 +23,7 @@ namespace SERVER.Models
         [StringLength(21)]
         public string Country { get; set; }
 
-        /// NOT SURE - NAVIGATION PROPERTY  
+        // NAVIGATION PROPERTY  
         public ICollection<TblGames>? Games { get; set; }
     }
 }
