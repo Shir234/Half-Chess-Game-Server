@@ -1,5 +1,6 @@
-﻿namespace SERVER.Pages.Players
+﻿namespace SERVER.Models
 {
+    /// Object to use in the page that display each player last game date!! (query 23)
     public class PlayerWithLastGame
     {
         public string PlayerName { get; set; }

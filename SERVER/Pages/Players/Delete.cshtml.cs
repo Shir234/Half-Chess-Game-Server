@@ -49,9 +49,15 @@ namespace SERVER.Pages.Players
                 return NotFound();
             }
 
+            // Find the player
             var tblplayers = await _context.TblPlayers.FindAsync(id);
             if (tblplayers != null)
             {
+                // First, delete all the games of the player
+                var currrPlayerGames = _context.TblGames.Where(g => g.PlayerId == id);
+                _context.TblGames.RemoveRange(currrPlayerGames);
+
+                // Now remove the player
                 TblPlayers = tblplayers;
                 _context.TblPlayers.Remove(TblPlayers);
                 await _context.SaveChangesAsync();

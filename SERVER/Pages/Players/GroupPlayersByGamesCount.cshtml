@@ -1,0 +1,46 @@
+﻿@page
+@model SERVER.Pages.Players.GroupPlayersByGamesCountModel
+@{
+    ViewData["Title"] = "Group Players By Games Count";
+}
+
+<div class="top-nav">
+    <a href="/">Home</a>
+    <a href="/About">About</a>
+    <a href="/Players">Our Players</a>
+    <a href="/Games">All Games</a>
+    <a href="/">Services</a>
+</div>
+
+<div class="dashboard-container">
+    <h2 class="dashboard-title">Players Grouped By Game Count</h2>
+
+    <table class="players-table">
+        @foreach (var group in Model.PlayersGameCount)                      @*LIST OF GROUPS*@
+        {
+            <tr>
+                <th colspan="2">
+                    @group.GamesCount @if (group.GamesCount == 1)           @*HEADER FOR EACH GROUP COUNT (KEY)*@
+                    {
+                        <text>Game</text>
+                    }
+                    else
+                    {
+                        <text>Games</text>
+                    }
+                </th>
+            </tr>
+            @foreach (var player in group.PlayerDetails)                    @*THE PLAYERS WITHIN THE CURRENT GROUP*@
+            {
+                <tr>
+                    <td>@player</td>                                        @*A ROW FOR EACH PLAYER*@
+                </tr>
+            }
+        }
+    </table>
+
+    <div>
+        <a asp-page="./Index">Back to List</a>
+    </div>
+</div>
+

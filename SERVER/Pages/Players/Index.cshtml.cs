@@ -14,12 +14,15 @@ namespace SERVER.Pages.Players
     {
         private readonly SERVER.Data.SERVERContext _context;
 
+        public IList<TblPlayers> TblPlayers { get; set; } = default!;
+        public List<string> PlayersNames { get; set; }
+
         public IndexModel(SERVER.Data.SERVERContext context)
         {
             _context = context;
+            PlayersNames = _context.TblPlayers.Select(p => p.Name.ToLower()).Distinct().OrderBy(name => name).ToList();
         }
 
-        public IList<TblPlayers> TblPlayers { get;set; } = default!;
 
         public async Task OnGetAsync()
         {

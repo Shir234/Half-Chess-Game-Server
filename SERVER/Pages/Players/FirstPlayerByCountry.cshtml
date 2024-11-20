@@ -1,9 +1,8 @@
 ﻿@page
-@model SERVER.Pages.Players.PlayerLastGameModel
+@model SERVER.Pages.Players.FirstPlayerByCountryModel
 @{
-    ViewData["Title"] = "Players With Last Game Date";
+    ViewData["Title"] = "First Player By Country";
 }
-
 
 <div class="top-nav">
     <a href="/">Home</a>
@@ -14,21 +13,23 @@
 </div>
 
 <div class="dashboard-container">
-    <h2 class="dashboard-title">Players with Last Game Date</h2>
+    <h2 class="dashboard-title">First Player From Each Country</h2>
 
     <table class="players-table">
         <thead>
             <tr>
+                <th>Country</th>
                 <th>Player Name</th>
-                <th>Last Game Date</th>
+                <th>First Game Date</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.Players)
+            @foreach (var item in Model.PlayersByCountry)
             {
                 <tr>
+                    <td>@item.Country</td>
                     <td>@item.PlayerName</td>
-                    <td>@item.LastGameDate</td>
+                    <td>@item.FirstGameDate</td>
                 </tr>
             }
         </tbody>

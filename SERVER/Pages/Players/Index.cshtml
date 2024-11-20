@@ -23,21 +23,24 @@
                 <button asp-page-handler="SortDefault" , class="btn btn-login">Default Order</button>
                 <button asp-page-handler="SortAscending" , class="btn btn-login">Sort A-Z</button>
                 <button asp-page-handler="SortDescending" , class="btn btn-login">Sort Z-A</button>
-                <a asp-page="./PlayerLastGame" asp-page-handler="" , class="btn btn-login">Player Last Game</a>
+                <a asp-page="./PlayerLastGame" asp-page-handler="" , class="btn btn-login">Player Last Game Date</a>
+                <a asp-page="./FirstPlayerByCountry" asp-page-handler="" , class="btn btn-login">First Player From Each Country</a>
+                <a asp-page="./PlayerGameCount" asp-page-handler="" , class="btn btn-login">Players Games Count</a>
+                <a asp-page="./GroupPlayersByGamesCount" asp-page-handler="" , class="btn btn-login">Players Grouped By Games Count</a>
+                <a asp-page="./GroupPlayersByCountry" asp-page-handler="" , class="btn btn-login">Players Grouped By Country</a>
             </div>
         </form>
     </div>
 
 
-
     <table class="players-table">
         <thead>
             <tr>
-                <th>Id</th>
-                <th>Name</th>
+                <th>Player Id</th>
+                <th>Player Name</th>
                 <th>Phone</th>
                 <th>Country</th>
-                <th>Actions</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>

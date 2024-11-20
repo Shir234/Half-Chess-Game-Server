@@ -1,9 +1,8 @@
 ﻿@page
-@model SERVER.Pages.Players.PlayerLastGameModel
+@model SERVER.Pages.Players.PlayerGameCountModel
 @{
-    ViewData["Title"] = "Players With Last Game Date";
+    ViewData["Title"] = "Players Games Count";
 }
-
 
 <div class="top-nav">
     <a href="/">Home</a>
@@ -14,27 +13,31 @@
 </div>
 
 <div class="dashboard-container">
-    <h2 class="dashboard-title">Players with Last Game Date</h2>
+    <h2 class="dashboard-title">Players Games Count</h2>
 
     <table class="players-table">
         <thead>
             <tr>
-                <th>Player Name</th>
-                <th>Last Game Date</th>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Game Count</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.Players)
+            @foreach (var item in Model.PlayersGameCount)
             {
                 <tr>
+                    <td>@item.PlayerId</td>
                     <td>@item.PlayerName</td>
-                    <td>@item.LastGameDate</td>
+                    <td>@item.GameCount</td>
                 </tr>
             }
         </tbody>
     </table>
 
+
     <div>
         <a asp-page="./Index">Back to List</a>
     </div>
 </div>
+

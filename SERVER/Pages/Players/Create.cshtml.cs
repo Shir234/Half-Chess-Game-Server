@@ -34,16 +34,16 @@ namespace SERVER.Pages.Players
         {
             CountryList = new List<SelectListItem>
             {
-                new SelectListItem { Value = "USA", Text = "United States" },
-                new SelectListItem { Value = "UK", Text = "United Kingdom" },
-                new SelectListItem { Value = "CA", Text = "Canada" },
-                new SelectListItem { Value = "AU", Text = "Australia" },
-                new SelectListItem { Value = "FR", Text = "France" },
-                new SelectListItem { Value = "DE", Text = "Germany" },
-                new SelectListItem { Value = "IT", Text = "Italy" },
-                new SelectListItem { Value = "ES", Text = "Spain" },
-                new SelectListItem { Value = "PT", Text = "Portugal" },
-                new SelectListItem { Value = "IL", Text = "Israel" },
+                new SelectListItem { Value = "United States", Text = "United States" },
+                new SelectListItem { Value = "United Kingdom", Text = "United Kingdom" },
+                new SelectListItem { Value = "Canada", Text = "Canada" },
+                new SelectListItem { Value = "Australia", Text = "Australia" },
+                new SelectListItem { Value = "France", Text = "France" },
+                new SelectListItem { Value = "Germany", Text = "Germany" },
+                new SelectListItem { Value = "Italy", Text = "Italy" },
+                new SelectListItem { Value = "Spain", Text = "Spain" },
+                new SelectListItem { Value = "Portugal", Text = "Portugal" },
+                new SelectListItem { Value = "Israel", Text = "Israel" },
                 // Add more countries as needed
             };
         }
@@ -52,12 +52,20 @@ namespace SERVER.Pages.Players
         {
             if (!ModelState.IsValid)
             {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine(error.ErrorMessage); // Log or view the errors
+                }
+
                 PopulateCountryList();
+                Console.WriteLine("we get here?");
                 return Page();
+
             }
 
             _context.TblPlayers.Add(TblPlayers);
             await _context.SaveChangesAsync();
+            Console.WriteLine("After add and sync");
 
             return RedirectToPage("./Index");
           // return new EmptyResult();

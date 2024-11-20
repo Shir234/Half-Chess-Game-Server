@@ -24,6 +24,6 @@ namespace SERVER.Models
         public string Country { get; set; }
 
         /// NOT SURE - NAVIGATION PROPERTY  
-        public ICollection<TblGames> Games { get; set; }
+        public ICollection<TblGames>? Games { get; set; }
     }
 }

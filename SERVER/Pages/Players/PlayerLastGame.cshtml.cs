@@ -30,17 +30,6 @@ namespace SERVER.Pages.Players
                             .Select(g=> (DateOnly?)g.Date)
                             .FirstOrDefault()))
                     .ToList();
-                //Players = _context.TblPlayers
-                //    .OrderByDescending(player=> player.Name)
-                //    .Select(player=> new PlayerWithLastGame
-                //    {
-                //        PlayerName = player.Name,
-                //        LastGameDate = player.Games
-                //        .OrderByDescending(g=> g.Date)
-                //        .Select(g => (DateOnly)g.Date)
-                //        .FirstOrDefault()
-                //    })
-                //    .ToList();
             }
         }
     }

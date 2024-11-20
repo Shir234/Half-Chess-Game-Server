@@ -24,11 +24,19 @@
                 <input asp-for="TblPlayers.Phone" class="form-control" />
                 <span asp-validation-for="TblPlayers.Phone" class="text-danger"></span>
             </div>
+@*              <div class="form-group">
+                 <label asp-for="TblPlayers.Country" class="control-label"></label>
+                 <input asp-for="TblPlayers.Country" class="form-control" />
+                 <span asp-validation-for="TblPlayers.Country" class="text-danger"></span>
+             </div> *@
             <div class="form-group">
                 <label asp-for="TblPlayers.Country" class="control-label"></label>
-                <input asp-for="TblPlayers.Country" class="form-control" />
+                <select asp-for="TblPlayers.Country" class="form-select" asp-items="Model.CountryList">
+                    <option value="">Select a Country</option>
+                </select>
                 <span asp-validation-for="TblPlayers.Country" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
