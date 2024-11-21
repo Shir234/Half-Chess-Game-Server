@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -103,6 +104,24 @@ namespace SERVER.API
         private bool TblPlayersExists(int id)
         {
             return _context.TblPlayers.Any(e => e.Id == id);
+        }
+
+
+
+
+        // GET: api/TblPlayers/Verify
+        [HttpGet("Verify")]
+        public async Task<bool> GetPlayerVerification(int id, string name)
+        {
+            var tblPlayers = await _context.TblPlayers.FindAsync(id);
+ 
+            if (tblPlayers == null || !tblPlayers.Name.Trim().Equals(name.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+                //return NotFound("Player not found or name does not match.");      //404
+            }
+            return true;
+            //return Ok(true);          //200
         }
     }
 }

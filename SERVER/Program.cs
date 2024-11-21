@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SERVER.Data;
+using SERVER.Models;
 namespace SERVER
 {
     public class Program
@@ -10,6 +11,10 @@ namespace SERVER
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddDbContext<SERVERContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("SERVERContext") ?? throw new InvalidOperationException("Connection string 'SERVERContext' not found.")));
+
+            // Add repository and manager services
+            builder.Services.AddScoped<GameRepository>();
+            builder.Services.AddScoped<GameManager>();
 
             // Add services to the container.
             builder.Services.AddRazorPages();
