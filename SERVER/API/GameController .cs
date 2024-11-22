@@ -23,8 +23,9 @@ namespace SERVER.API
         // Start a new game
         // POST: api/Game/start
         [HttpPost("start")]
-        public IActionResult StartGame(int playerId)
+        public IActionResult StartGame([FromForm] int playerId)
         {
+            Console.WriteLine($"PLAYER ID IN START: {playerId}");
             // Check if the player already has an active game
             if (ActiveGames.ContainsKey(playerId))
             {
@@ -37,6 +38,7 @@ namespace SERVER.API
 
             var board = JsonConvert.SerializeObject(gameManager.getGameBoard());
 
+            Console.WriteLine("END OF START GAME CONTROLLER");
             return Ok(new
             {
                 Board = board,
@@ -48,6 +50,11 @@ namespace SERVER.API
         [HttpGet("board/{playerId}")]
         public IActionResult GetGameBoard(int playerId)
         {
+            Console.WriteLine("GET GAME BOARD CONTROLLER");
+            foreach (var game in ActiveGames)
+            {
+                Console.WriteLine($"Active player ID: {game.Key}");
+            }
             if(!ActiveGames.ContainsKey(playerId))
             {
                 return NotFound("No active game found for this player.");
@@ -64,33 +71,81 @@ namespace SERVER.API
 
         // PUT: api/Game/move/check/{playerId}
         [HttpPut("move/check/{playerId}")]
-        public IActionResult PutMovePiece(int playerId, dynamic moveData)
+        public IActionResult PutMovePiece(int playerId, [FromBody] MoveData moveData)
+        {
+            foreach (var game in ActiveGames)
+            {
+                Console.WriteLine($"Active player ID: {game.Key}");
+            }
+            if (!ActiveGames.ContainsKey(playerId))
+            {
+                return NotFound("No active game found for this player.");
+            }
+
+            ChessPieceType piece = (ChessPieceType) moveData.piece;
+            int fromRow = (int)moveData.fromRow;
+            int fromCol = (int)moveData.fromCol;
+            int toRow = (int)moveData.toRow;
+            int toCol = (int)moveData.toCol;
+
+            var gameManager = ActiveGames[playerId];
+            bool isLegal = gameManager.IsMoveLegal(piece, fromRow, fromCol, toRow, toCol);
+
+            if (isLegal)
+            {
+                gameManager.MovePiece(piece, fromRow, fromCol, toRow, toCol);
+            }
+            
+            return Ok(new { IsLegal = isLegal });
+        }
+
+
+        // Get: api/Game/State/{playerId}
+        [HttpGet("State/{playerId}")]
+        public IActionResult GetGameState(int playerId)
         {
             if (!ActiveGames.ContainsKey(playerId))
             {
                 return NotFound("No active game found for this player.");
             }
-            var gameManager = ActiveGames[playerId];
-            bool isLegal = gameManager.IsMoveLegal(
-                (ChessPieceType)(int)moveData.piece,
-                (int)moveData.fromRow,
-                (int)moveData.fromCol,
-                (int)moveData.toRow,
-                (int)moveData.toCol
-            );
 
-            if(isLegal)
+            var gameManager = ActiveGames[playerId];
+            //var board = JsonConvert.SerializeObject(gameManager.getGameBoard());
+
+            return Ok(new
             {
-                gameManager.MovePiece(
-                    (ChessPieceType)(int)moveData.piece,
-                    (int)moveData.fromRow,
-                    (int)moveData.fromCol,
-                    (int)moveData.toRow,
-                    (int)moveData.toCol
-                );
+                IsActive = gameManager.isGameActive,
+                IsCheck = gameManager.IsCheck,
+                IsPlayerWin = gameManager.IsPlayerWin
+            });
+        }
+
+        // Get: api/Game/move/server/{playerId}
+        [HttpGet("move/server/{playerId}")]
+        public IActionResult GetServerMove(int playerId)
+        {
+            if (!ActiveGames.ContainsKey(playerId))
+            {
+                return NotFound("No active game found for this player.");
             }
 
-            return Ok(new { IsLegal = isLegal });
+            var gameManager = ActiveGames[playerId];
+            //gameManager.
+
+            //var board = JsonConvert.SerializeObject(gameManager.getGameBoard());
+
+            return Ok(new
+            {
+                
+            });
+        }
+        public class MoveData
+        {
+            public int piece { get; set; }
+            public int fromRow { get; set; }
+            public int fromCol { get; set; }
+            public int toRow { get; set; }
+            public int toCol { get; set; }
         }
     }
 }

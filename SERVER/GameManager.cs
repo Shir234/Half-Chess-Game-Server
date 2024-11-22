@@ -19,8 +19,10 @@ namespace SERVER
 
 
         // Variables to manage the game
-        private bool isGameActive;                              // is the current game active ? 
+        public bool isGameActive;                              // is the current game active ? 
+        public bool IsPlayerWin { get; set; }
         public bool isPlayerTurn { get; set; }                              // is the user or server turn
+
 
 
         private ChessPieceType[,] gameBoard;                    // Matrix - represent the game board
@@ -35,6 +37,8 @@ namespace SERVER
         private readonly GameRepository _gameRepository;
         public TblGames Game { get; set; } = default!;
         public int Timer { get; set; }
+        public bool IsCheck { get; set; }
+
         ////// END NEW //////////////////////////////////////////////////////////////
 
 
@@ -54,7 +58,9 @@ namespace SERVER
 
             this.isGameActive = true;
             this.isPlayerTurn = true;
-            setGameBoard();         
+            setGameBoard();
+
+            Console.WriteLine("END OF MANAGER START GAME");
         }
 
         public void SetPlayerTurn()
@@ -192,21 +198,29 @@ namespace SERVER
         {
             if (IsInCheck(ChessPieceType.WKing))                    // Check if white King is in check
             {
+                IsCheck = true;
                 Console.WriteLine("White King is in check.");
                 if (IsCheckmate(ChessPieceType.WKing))
                 {
                     Console.WriteLine("Checkmate! Black wins.");
                     isGameActive = false; // End game
-                }
+                    IsPlayerWin = false;
+    }
             }
-            if (IsInCheck(ChessPieceType.BKing))                    // Check if black King is in check
+            else if (IsInCheck(ChessPieceType.BKing))                    // Check if black King is in check
             {
+                IsCheck = true;
                 Console.WriteLine("Black King is in check.");
                 if (IsCheckmate(ChessPieceType.BKing))
                 {
                     Console.WriteLine("Checkmate! White wins.");
                     isGameActive = false; // End game
+                    IsPlayerWin = true;
                 }
+            }
+            else
+            {
+                IsCheck = false;
             }
         }
 
