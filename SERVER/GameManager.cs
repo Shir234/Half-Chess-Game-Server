@@ -17,7 +17,6 @@ namespace SERVER
         public static readonly int BoardChessPieceSize = 80;
         public static readonly int BoardMargin = 20;
 
-
         // Variables to manage the game
         public bool isGameActive;                              // is the current game active ? 
         public bool IsPlayerWin { get; set; }
@@ -122,7 +121,12 @@ namespace SERVER
             }
         }
 
-        // Check if two game pieces are the same color
+        /// <summary>
+        /// Check if the two pieces are of the same color.
+        /// </summary>
+        /// <param name="piece">The first piece</param>
+        /// <param name="targetPiece">The second piece</param>
+        /// <returns></returns>
         public bool IsSameColor(ChessPieceType piece, ChessPieceType targetPiece)
         {
             return (piece == ChessPieceType.WPawn || piece == ChessPieceType.WKing || piece == ChessPieceType.WKnight || piece == ChessPieceType.WBishop || piece == ChessPieceType.WCastle) &&
@@ -131,7 +135,15 @@ namespace SERVER
                    (targetPiece == ChessPieceType.BPawn || targetPiece == ChessPieceType.BKing || targetPiece == ChessPieceType.BKnight || targetPiece == ChessPieceType.BBishop || targetPiece == ChessPieceType.BCastle);
         }
 
-        // Validate Pawn Moves
+        /// <summary>
+        /// Determine if the pawn move is valid.
+        /// </summary>
+        /// <param name="pawn">The pawn piece</param>
+        /// <param name="fromRow">The start row</param>
+        /// <param name="fromCol">The start col</param>
+        /// <param name="toRow">The end row</param>
+        /// <param name="toCol">The end col</param>
+        /// <returns></returns>
         public bool IsValidPawnMove(ChessPieceType pawn, int fromRow, int fromCol, int toRow, int toCol)
         {
             int direction = (pawn == ChessPieceType.WPawn) ? -1 : 1;
@@ -156,26 +168,54 @@ namespace SERVER
             return false;
         }
 
-        // Validate King Moves
+        /// <summary>
+        /// Determine if the king move is valid.
+        /// </summary>
+        /// <param name="fromRow">The start row</param>
+        /// <param name="fromCol">The start col</param>
+        /// <param name="toRow">The end row</param>
+        /// <param name="toCol">The end col</param>
+        /// <returns></returns>
         public bool IsValidKingMove(int fromRow, int fromCol, int toRow, int toCol)
         {
             return Math.Abs(fromRow - toRow) <= 1 && Math.Abs(fromCol - toCol) <= 1;
         }
 
-        // Validate Knight Moves
+        /// <summary>
+        /// Determine if the knight move is valid.
+        /// </summary>
+        /// <param name="fromRow">The start row</param>
+        /// <param name="fromCol">The start col</param>
+        /// <param name="toRow">The end row</param>
+        /// <param name="toCol">The end col</param>
+        /// <returns></returns>
         public bool IsValidKnightMove(int fromRow, int fromCol, int toRow, int toCol)
         {
             return Math.Abs(fromRow - toRow) == 2 && Math.Abs(fromCol - toCol) == 1 ||
                    Math.Abs(fromRow - toRow) == 1 && Math.Abs(fromCol - toCol) == 2;
         }
 
-        // Validate Bishop Moves
+        /// <summary>
+        /// Determine if the bishop move is valid.
+        /// </summary>
+        /// <param name="fromRow">The start row</param>
+        /// <param name="fromCol">The start col</param>
+        /// <param name="toRow">The end row</param>
+        /// <param name="toCol">The end col</param>
+        /// <returns></returns>
         public bool IsValidBishopMove(int fromRow, int fromCol, int toRow, int toCol)
         {
             return Math.Abs(fromRow - toRow) == Math.Abs(fromCol - toCol);
         }
 
-        // Validate Castle Moves
+        /// <summary>
+        /// Determine if the castle move is valid.
+        /// </summary>
+        /// <param name="fromRow">The start row</param>
+        /// <param name="fromCol">The start col</param>
+        /// <param name="toRow">The end row</param>
+        /// <param name="toCol">The end col</param>
+        /// <returns></returns>
         public bool IsValidCastleMove(int fromRow, int fromCol, int toRow, int toCol)
         {
             return fromRow == toRow || fromCol == toCol;
@@ -184,6 +224,14 @@ namespace SERVER
 
 
         // Move Piece --> set it in the new location and empty the last location on board
+        /// <summary>
+        /// Move the piece on the board
+        /// </summary>
+        /// <param name="piece">The piece to move</param>
+        /// <param name="fromRow">The start row</param>
+        /// <param name="fromCol">The start col</param>
+        /// <param name="toRow">The end row</param>
+        /// <param name="toCol">The end col</param>
         public void MovePiece(ChessPieceType piece, int fromRow, int fromCol, int toRow, int toCol)
         {
             gameBoard[toRow, toCol] = piece;
@@ -193,7 +241,9 @@ namespace SERVER
             SetPlayerTurn();                                        // and switch turn
         }
 
-        // Check the game state
+        /// <summary>
+        /// Determine the current game state
+        /// </summary>
         public void CheckGameState()
         {
             if (IsInCheck(ChessPieceType.WKing))                    // Check if white King is in check
@@ -224,8 +274,13 @@ namespace SERVER
             }
         }
 
-
-        // DONT KNOW TO EXPLAIN ?
+        /// <summary>
+        /// Determine if there is a check.
+        /// </summary>
+        /// <param name="playerKing">The king piece</param>
+        /// <param name="kingRow">The king piece row. default -1 if unknown</param>
+        /// <param name="kingCol">The king piece col. default -1 if unknown</param>
+        /// <returns></returns>
         public bool IsInCheck(ChessPieceType playerKing, int kingRow = -1, int kingCol = -1)
         {
             if (kingRow == -1 || kingCol == -1)
@@ -257,7 +312,11 @@ namespace SERVER
             return false;               // King is not in check
         }
 
-
+        /// <summary>
+        /// Determine if there is a checkmate
+        /// </summary>
+        /// <param name="playerKing">The king piece</param>
+        /// <returns></returns>
         public bool IsCheckmate(ChessPieceType playerKing)
         {
             int kingRow = -1, kingCol = -1;
@@ -312,7 +371,12 @@ namespace SERVER
             return true;
         }
 
-
+        /// <summary>
+        /// Search for the king piece
+        /// </summary>
+        /// <param name="playerKing"></param>
+        /// <param name="kingRow"></param>
+        /// <param name="kingCol"></param>
         private void FindTheKingPiece(ChessPieceType playerKing, ref int kingRow, ref int kingCol)
         {
             for (int row = 0; row < boardLength; row++)
