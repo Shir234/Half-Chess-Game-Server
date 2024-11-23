@@ -21,16 +21,18 @@ namespace SERVER
         // Variables to manage the game
         public bool isGameActive;                              // is the current game active ? 
         public bool IsPlayerWin { get; set; }
-        public bool isPlayerTurn { get; set; }                              // is the user or server turn
-
+        public bool IsPlayerTurn { get; set; }                              // is the user or server turn
 
 
         private ChessPieceType[,] gameBoard;                    // Matrix - represent the game board
-        private List<GamePiece> gamePieces = new List<GamePiece> ();
+        private List<GamePiece> gamePiecesList;
+        private List<(int, int)> movesListBasicList;
+        private List<(int, int)> movesListCaptureList;
 
         private int WKingLocationX, BKingLocationX;
         private int WKingLocationY, BKingLocationY;             // King location on the board
-        private int boardLength = BoardLength, boardWidth = BoardWidth;
+        private int boardLength = BoardLength, 
+            boardWidth = BoardWidth;
 
 
 
@@ -47,7 +49,16 @@ namespace SERVER
         public GameManager(GameRepository gameRepository)
         {
             _gameRepository = gameRepository;
+            InitializeConstants();
             Console.WriteLine("END OF MANAGER C'TOR");
+        }
+
+        private void InitializeConstants()
+        {
+            gamePiecesList = new List<GamePiece>();
+            movesListBasicList = new List<(int, int)>();
+            movesListCaptureList = new List<(int, int)>();
+
         }
 
         public void StartGame(int playerId)
@@ -59,7 +70,7 @@ namespace SERVER
             Game.StartTime = TimeOnly.FromDateTime(DateTime.Now);
 
             this.isGameActive = true;
-            this.isPlayerTurn = true;
+            this.IsPlayerTurn = true;
             setGameBoard();
 
             Console.WriteLine("END OF MANAGER START GAME");
@@ -67,7 +78,7 @@ namespace SERVER
 
         public void setGamePieces()
         {
-            gamePieces.Clear();
+            gamePiecesList.Clear();
 
             for(int row = 0; row < boardLength; row++)
             {
@@ -77,7 +88,7 @@ namespace SERVER
 
                     if(piece.ToString().StartsWith("B"))
                     {
-                        gamePieces.Add(new GamePiece
+                        gamePiecesList.Add(new GamePiece
                         {
                             Row = row,
                             Col = col,
@@ -89,11 +100,10 @@ namespace SERVER
         }
 
 
-    public void SetPlayerTurn()
+        public void SetPlayerTurn()
         {
-            isPlayerTurn = !isPlayerTurn;
+            IsPlayerTurn = !IsPlayerTurn;
         }
-
 
 
         // Initiate a matrix in the game board starting position
@@ -508,12 +518,13 @@ namespace SERVER
                 // If the square is empty, color it as a legal move
                 if (targetLocation == ChessPieceType.None)
                 {
-                    ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, boardRow: newBoardRow, boardCol: newBoardCol);
+                    movesListBasicList.Add((newBoardRow, newBoardCol));
                 }
                 // Check what kind of piecee is on the square
-                else if (!gameMng.IsSameColor(piece: castlePiece, targetPiece: targetLocation))
+                else if (!IsSameColor(piece: castlePiece, targetPiece: targetLocation))
                 {
-                    ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                    movesListBasicList.Add((newBoardRow, newBoardCol));
+                    //movesListCaptureList.Add((newBoardRow, newBoardCol));
                     break;
                 }
                 else
@@ -531,12 +542,6 @@ namespace SERVER
         private void ShowLegalMovesForBishop(int boardRow, int boardCol)
         {
             Console.WriteLine("Bishop clicked, location: [" + boardRow + ", " + boardCol + "]");
-
-            ResetBoard();
-            Graphics pieceGraphics = this.CreateGraphics();
-            Bitmap chosenPieceBitmap = new Bitmap(this.ClientRectangle.Width, this.ClientRectangle.Height);
-            Graphics chosenPieceGraphics = Graphics.FromImage(chosenPieceBitmap);
-            ChessPieceType[,] gameBoard = gameMng.GameBoard;
 
             // Diagonal moves (4 directions) for Bishop
             int[] directions = new int[] { -1, 1 };
@@ -560,11 +565,12 @@ namespace SERVER
                         // Check if the square is empty
                         if (targetLocation == ChessPieceType.None)
                         {
-                            ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, newBoardRow, newBoardCol);
+                            movesListBasicList.Add((newBoardRow, newBoardCol));
                         }
-                        else if (!gameMng.IsSameColor(piece: bishopPiece, targetPiece: targetLocation))
+                        else if (!IsSameColor(piece: bishopPiece, targetPiece: targetLocation))
                         {
-                            ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                            movesListBasicList.Add((newBoardRow, newBoardCol));
+                            //movesListCaptureList.Add((newBoardRow, newBoardCol));
                             break;
                         }
                         else
@@ -574,9 +580,6 @@ namespace SERVER
                     }
                 }
             }
-
-            pieceGraphics.DrawImage(chosenPieceBitmap, 0, 0);
-            PlacePiecesOnBoard(pieceGraphics);
         }
 
         /// <summary>
@@ -588,11 +591,6 @@ namespace SERVER
         {
             Console.WriteLine("Knight clicked, location: [" + boardRow + ", " + boardCol + "]");
 
-            ResetBoard();
-            Graphics pieceGraphics = this.CreateGraphics();
-            Bitmap chosenPieceBitmap = new Bitmap(this.ClientRectangle.Width, this.ClientRectangle.Height);
-            Graphics chosenPieceGraphics = Graphics.FromImage(chosenPieceBitmap);
-            ChessPieceType[,] gameBoard = gameMng.GameBoard;
             // 8 possible L-shaped moves for Knight
             int[] rowMoves = new int[] { -2, -1, 1, 2, 2, 1, -1, -2 };
             int[] colMoves = new int[] { 1, 2, 2, 1, -1, -2, -2, -1 };
@@ -610,18 +608,16 @@ namespace SERVER
                     // Check if the square is empty
                     if (targetLocation == ChessPieceType.None)
                     {
-                        ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, newBoardRow, newBoardCol);
+                        movesListBasicList.Add((newBoardRow, newBoardCol));
                     }
                     // Check what kind of piecee is on the square
-                    else if (!gameMng.IsSameColor(piece: knightPiece, targetPiece: targetLocation))
+                    else if (!IsSameColor(piece: knightPiece, targetPiece: targetLocation))
                     {
-                        ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                        movesListBasicList.Add((newBoardRow, newBoardCol));
+                        //movesListCaptureList.Add((newBoardRow, newBoardCol));
                     }
                 }
             }
-
-            pieceGraphics.DrawImage(chosenPieceBitmap, 0, 0);
-            PlacePiecesOnBoard(pieceGraphics);
         }
 
         /// <summary>
@@ -632,12 +628,6 @@ namespace SERVER
         private void ShowLegalMovesForKing(int boardRow, int boardCol)
         {
             Console.WriteLine("King clicked, location: [" + boardRow + ", " + boardCol + "]");
-
-            ResetBoard();
-            Graphics pieceGraphics = this.CreateGraphics();
-            Bitmap chosenPieceBitmap = new Bitmap(this.ClientRectangle.Width, this.ClientRectangle.Height);
-            Graphics chosenPieceGraphics = Graphics.FromImage(chosenPieceBitmap);
-            ChessPieceType[,] gameBoard = gameMng.GameBoard;
 
             for (int newBoardRow = boardRow - 1; newBoardRow <= boardRow + 1; newBoardRow++)
             {
@@ -662,18 +652,16 @@ namespace SERVER
                     // Check if the square is empty
                     if (targetLocation == ChessPieceType.None)
                     {
-                        ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, newBoardRow, newBoardCol);
+                        movesListBasicList.Add((newBoardRow, newBoardCol));
                     }
                     // Check what kind of piece is on the square
-                    else if (!gameMng.IsSameColor(piece: KingPiece, targetPiece: targetLocation))
+                    else if (!IsSameColor(piece: KingPiece, targetPiece: targetLocation))
                     {
-                        ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                        movesListBasicList.Add((newBoardRow, newBoardCol));
+                        //movesListCaptureList.Add((newBoardRow, newBoardCol));
                     }
-
                 }
             }
-            pieceGraphics.DrawImage(chosenPieceBitmap, 0, 0);
-            PlacePiecesOnBoard(pieceGraphics);
         }
 
         /// <summary>
@@ -685,12 +673,6 @@ namespace SERVER
         private void ShowLegalMovesForPawn(int boardRow, int boardCol, ChessPieceType pawnType)
         {
             Console.WriteLine("Pawn clicked, location: [" + boardRow + ", " + boardCol + "]");
-
-            ResetBoard();
-            Graphics pieceGraphics = this.CreateGraphics();
-            Bitmap chosenPieceBitmap = new Bitmap(this.ClientRectangle.Width, this.ClientRectangle.Height);
-            Graphics chosenPieceGraphics = Graphics.FromImage(chosenPieceBitmap);
-            ChessPieceType[,] gameBoard = gameMng.GameBoard;
 
             int direction = (pawnType == ChessPieceType.WPawn) ? -1 : 1;
             int startRow = (pawnType == ChessPieceType.WPawn) ? 6 : 1;
@@ -704,7 +686,7 @@ namespace SERVER
 
                 if (targetLocation == ChessPieceType.None)
                 {
-                    ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, newBoardRow, boardCol);
+                    movesListBasicList.Add((newBoardRow, boardCol));
                 }
             }
 
@@ -714,7 +696,7 @@ namespace SERVER
                 newBoardRow = boardRow + (2 * direction);
                 if (gameBoard[newBoardRow, boardCol] == ChessPieceType.None)
                 {
-                    ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, boardRow + (2 * direction), boardCol);
+                    movesListBasicList.Add((newBoardRow, boardCol));
                 }
             }
 
@@ -725,7 +707,7 @@ namespace SERVER
                 {
                     if (gameBoard[boardRow, boardCol - 1] == ChessPieceType.None) // The square is empty
                     {
-                        ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, boardRow, boardCol - 1);
+                        movesListBasicList.Add((newBoardRow, boardCol));
                     }
                 }
 
@@ -734,7 +716,7 @@ namespace SERVER
                 {
                     if (gameBoard[boardRow, boardCol + 1] == ChessPieceType.None) // The square is empty
                     {
-                        ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, boardRow, boardCol + 1);
+                        movesListBasicList.Add((newBoardRow, boardCol));
                     }
                 }
             }
@@ -751,9 +733,10 @@ namespace SERVER
                 {
                     if (targetLocation != ChessPieceType.None)
                     {
-                        if (!gameMng.IsSameColor(piece: pawnType, targetPiece: targetLocation))   // Not the same color
+                        if (!IsSameColor(piece: pawnType, targetPiece: targetLocation))   // Not the same color
                         {
-                            ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                            movesListBasicList.Add((newBoardRow, newBoardCol));
+                            //movesListCaptureList.Add((newBoardRow, newBoardCol));
                         }
                     }
                 }
@@ -762,16 +745,36 @@ namespace SERVER
 
                 // Capture right diagonally
                 if (newBoardCol < boardWidth && targetLocation != ChessPieceType.None &&
-                    !gameMng.IsSameColor(piece: pawnType, targetPiece: targetLocation)) // Not the same color
+                    !IsSameColor(piece: pawnType, targetPiece: targetLocation)) // Not the same color
                 {
-                    ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                    movesListBasicList.Add((newBoardRow, newBoardCol));
+                    //movesListCaptureList.Add((newBoardRow, newBoardCol));
                 }
             }
 
-            pieceGraphics.DrawImage(chosenPieceBitmap, 0, 0);
-            PlacePiecesOnBoard(pieceGraphics);
         }
 
+        internal void ServerMove(out ChessPieceType pieceType, 
+            out int selectedPieceStartRow, out int selectedPieceStartCol, 
+            out int selectedPieceEndRow, out int selectedPieceEndCol)
+        {
+            Random random = new Random();
+            int pieceIndex = random.Next(0, gamePiecesList.Count);
+            GamePiece chosenPiece = gamePiecesList[pieceIndex];
 
+            // Get the current piece location
+            pieceType = chosenPiece.PieceType;
+            selectedPieceStartRow = chosenPiece.Row;
+            selectedPieceStartCol = chosenPiece.Col;
+
+            ShowLegalMovesForChessPiece(chosenPiece.PieceType, chosenPiece.Row, chosenPiece.Col);
+            int moveIndex = random.Next(0, movesListBasicList.Count);
+            
+            //Get the new piece location
+            selectedPieceEndRow = movesListBasicList[moveIndex].Item1;
+            selectedPieceEndCol = movesListBasicList[moveIndex].Item2;
+
+            MovePiece(piece: pieceType, fromRow: selectedPieceStartRow, fromCol: selectedPieceStartCol, toRow: selectedPieceEndRow, toCol: selectedPieceEndCol);
+        }
     }
 }

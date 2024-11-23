@@ -43,7 +43,7 @@ namespace SERVER.API
             return Ok(new
             {
                 Board = board,
-                isPlayerTurn = gameManager.isPlayerTurn
+                isPlayerTurn = gameManager.IsPlayerTurn
             });
         }
 
@@ -131,15 +131,26 @@ namespace SERVER.API
                 return NotFound("No active game found for this player.");
             }
 
-
             var gameManager = ActiveGames[playerId];
-            //gameManager.
 
-            //var board = JsonConvert.SerializeObject(gameManager.getGameBoard());
+            // Init server move
+            int selectedPieceStartRow, selectedPieceStartCol,
+                selectedPieceEndRow, selectedPieceEndCol;
+            ChessPieceType selectedPieceType;
 
+            // Get server move
+            gameManager.ServerMove(out selectedPieceType,
+                out selectedPieceStartRow, out selectedPieceStartCol,
+                out selectedPieceEndRow, out selectedPieceEndCol);
+            
+            // Send server mvoe to client
             return Ok(new
             {
-                
+                SelectedPieceType = selectedPieceType,
+                SelectedPieceStartRow = selectedPieceStartRow,
+                SelectedPieceStartCol = selectedPieceStartCol,
+                SelectedPieceEndRow = selectedPieceEndRow,
+                SelectedPieceEndCol = selectedPieceEndCol
             });
         }
 
