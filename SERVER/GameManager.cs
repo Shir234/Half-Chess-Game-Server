@@ -63,7 +63,6 @@ namespace SERVER
 
         public void StartGame(int playerId)
         {
-            setGamePieces();
             Game = new TblGames();
             Game.PlayerId = playerId;
             Game.Date = DateOnly.FromDateTime(DateTime.Today);
@@ -72,6 +71,7 @@ namespace SERVER
             this.isGameActive = true;
             this.IsPlayerTurn = true;
             setGameBoard();
+            setGamePieces();
 
             Console.WriteLine("END OF MANAGER START GAME");
         }
@@ -99,12 +99,10 @@ namespace SERVER
             }
         }
 
-
         public void SetPlayerTurn()
         {
             IsPlayerTurn = !IsPlayerTurn;
         }
-
 
         // Initiate a matrix in the game board starting position
         private void setGameBoard()
@@ -271,8 +269,15 @@ namespace SERVER
         /// <param name="toCol">The end col</param>
         public void MovePiece(ChessPieceType piece, int fromRow, int fromCol, int toRow, int toCol)
         {
+            var removePiece = gamePiecesList.Find(p => p.Row == toRow && p.Col == toCol);
+            if (removePiece != null)
+            {
+                gamePiecesList.Remove(removePiece);
+            }
+
             gameBoard[toRow, toCol] = piece;
             gameBoard[fromRow, fromCol] = ChessPieceType.None;
+
 
             CheckGameState();                                       // After every move, check if the game is in check or checkmate 
             SetPlayerTurn();                                        // and switch turn
@@ -326,7 +331,7 @@ namespace SERVER
             }
             if (kingRow == -1) 
                 return false;                                                                           // No King found, invalid scenario
-            Console.WriteLine("King at [" + kingRow + ", " + kingCol + "]");
+     //       Console.WriteLine("King at [" + kingRow + ", " + kingCol + "]");
 
             // Check if any opposing pieces can move to the King's position
             for (int opposingPieceRow = 0; opposingPieceRow < boardLength; opposingPieceRow++)
@@ -340,8 +345,8 @@ namespace SERVER
                     // Check if this piece can legally attack the King's position
                     if (IsMoveLegal(piece, opposingPieceRow, opposingPieceCol, kingRow, kingCol))
                     {
-                        Console.WriteLine("King at [" + kingRow + ", " + kingCol + "]");
-                        Console.WriteLine(piece.ToString() + " at [" + opposingPieceRow + ", " + opposingPieceCol + "] threatens " + playerKing.ToString());
+        //                Console.WriteLine("King at [" + kingRow + ", " + kingCol + "]");
+        //                Console.WriteLine(piece.ToString() + " at [" + opposingPieceRow + ", " + opposingPieceCol + "] threatens " + playerKing.ToString());
                         return true;    // King is in check
                     }
                 }
@@ -358,7 +363,7 @@ namespace SERVER
         {
             int kingRow = -1, kingCol = -1;
             FindTheKingPiece(playerKing, ref kingRow, ref kingCol);                                  // Find the location of the King
-            Console.WriteLine("King at [" + kingRow + ", " + kingCol + "]");
+     //       Console.WriteLine("King at [" + kingRow + ", " + kingCol + "]");
 
             if (!IsInCheck(playerKing, kingRow, kingCol))                                            // If the King is not in check, it's not checkmate
             {
@@ -520,7 +525,7 @@ namespace SERVER
                 {
                     movesListBasicList.Add((newBoardRow, newBoardCol));
                 }
-                // Check what kind of piecee is on the square
+                // Check what kind of piece is on the square
                 else if (!IsSameColor(piece: castlePiece, targetPiece: targetLocation))
                 {
                     movesListBasicList.Add((newBoardRow, newBoardCol));
@@ -754,27 +759,50 @@ namespace SERVER
 
         }
 
+        int countMoves = 0;
         internal void ServerMove(out ChessPieceType pieceType, 
             out int selectedPieceStartRow, out int selectedPieceStartCol, 
             out int selectedPieceEndRow, out int selectedPieceEndCol)
         {
-            Random random = new Random();
-            int pieceIndex = random.Next(0, gamePiecesList.Count);
-            GamePiece chosenPiece = gamePiecesList[pieceIndex];
+            selectedPieceEndRow = -1;
+            selectedPieceEndCol = -1;
+            int pieceIndex = -1;
 
-            // Get the current piece location
-            pieceType = chosenPiece.PieceType;
-            selectedPieceStartRow = chosenPiece.Row;
-            selectedPieceStartCol = chosenPiece.Col;
+            do
+            {
+                Random random = new Random();
+                pieceIndex = random.Next(0, gamePiecesList.Count);
+                GamePiece chosenPiece = gamePiecesList[pieceIndex];
 
-            ShowLegalMovesForChessPiece(chosenPiece.PieceType, chosenPiece.Row, chosenPiece.Col);
-            int moveIndex = random.Next(0, movesListBasicList.Count);
-            
-            //Get the new piece location
-            selectedPieceEndRow = movesListBasicList[moveIndex].Item1;
-            selectedPieceEndCol = movesListBasicList[moveIndex].Item2;
+                // Get the current piece location
+                pieceType = chosenPiece.PieceType;
+                selectedPieceStartRow = chosenPiece.Row;
+                selectedPieceStartCol = chosenPiece.Col;
+
+                ShowLegalMovesForChessPiece(chosenPiece.PieceType, chosenPiece.Row, chosenPiece.Col);
+                int moveIndex = random.Next(0, movesListBasicList.Count);
+                Console.WriteLine($"MOVES LIST SIZE: {movesListBasicList.Count}");
+                Console.WriteLine($"MOVE INDEX: {moveIndex}");
+                //Get the new piece location
+
+                if(movesListBasicList.Count > 0)
+                {
+                    selectedPieceEndRow = movesListBasicList[moveIndex].Item1;
+                    selectedPieceEndCol = movesListBasicList[moveIndex].Item2;
+
+                    if (IsMoveLegal(pieceType, selectedPieceStartRow, selectedPieceStartCol, selectedPieceEndRow, selectedPieceEndCol))
+                    {
+
+                        Console.WriteLine($" {++countMoves}THE MOVE IS LEGAL - SERVER");
+                    }
+                }        
+            } while (movesListBasicList.Count < 1);
 
             MovePiece(piece: pieceType, fromRow: selectedPieceStartRow, fromCol: selectedPieceStartCol, toRow: selectedPieceEndRow, toCol: selectedPieceEndCol);
+            gamePiecesList[pieceIndex].Row = selectedPieceEndRow;
+            gamePiecesList[pieceIndex].Col = selectedPieceEndCol;
+            movesListBasicList.Clear();
         }
+            
     }
 }

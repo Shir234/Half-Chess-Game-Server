@@ -83,6 +83,7 @@ namespace SERVER.API
                 return NotFound("No active game found for this player.");
             }
 
+
             ChessPieceType piece = (ChessPieceType) moveData.piece;
             int fromRow = (int)moveData.fromRow;
             int fromCol = (int)moveData.fromCol;
@@ -94,6 +95,7 @@ namespace SERVER.API
 
             if (isLegal)
             {
+
                 gameManager.MovePiece(piece, fromRow, fromCol, toRow, toCol);
             }
             
@@ -143,7 +145,7 @@ namespace SERVER.API
                 out selectedPieceStartRow, out selectedPieceStartCol,
                 out selectedPieceEndRow, out selectedPieceEndCol);
             
-            // Send server mvoe to client
+            // Send server move to client
             return Ok(new
             {
                 SelectedPieceType = selectedPieceType,
