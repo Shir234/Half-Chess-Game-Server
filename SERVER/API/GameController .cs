@@ -131,6 +131,7 @@ namespace SERVER.API
                 return NotFound("No active game found for this player.");
             }
 
+
             var gameManager = ActiveGames[playerId];
             //gameManager.
 

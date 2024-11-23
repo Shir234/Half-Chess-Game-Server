@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualBasic;
 using SERVER.Models;
+using System.Drawing;
 
 namespace SERVER
 {
@@ -25,7 +26,8 @@ namespace SERVER
 
 
         private ChessPieceType[,] gameBoard;                    // Matrix - represent the game board
-       
+        private List<GamePiece> gamePieces = new List<GamePiece> ();
+
         private int WKingLocationX, BKingLocationX;
         private int WKingLocationY, BKingLocationY;             // King location on the board
         private int boardLength = BoardLength, boardWidth = BoardWidth;
@@ -50,6 +52,7 @@ namespace SERVER
 
         public void StartGame(int playerId)
         {
+            setGamePieces();
             Game = new TblGames();
             Game.PlayerId = playerId;
             Game.Date = DateOnly.FromDateTime(DateTime.Today);
@@ -62,7 +65,31 @@ namespace SERVER
             Console.WriteLine("END OF MANAGER START GAME");
         }
 
-        public void SetPlayerTurn()
+        public void setGamePieces()
+        {
+            gamePieces.Clear();
+
+            for(int row = 0; row < boardLength; row++)
+            {
+                for(int col = 0; col < boardWidth; col++)
+                {
+                    ChessPieceType piece = gameBoard[row, col];
+
+                    if(piece.ToString().StartsWith("B"))
+                    {
+                        gamePieces.Add(new GamePiece
+                        {
+                            Row = row,
+                            Col = col,
+                            PieceType = piece
+                        });
+                    }
+                }
+            }
+        }
+
+
+    public void SetPlayerTurn()
         {
             isPlayerTurn = !isPlayerTurn;
         }
@@ -410,5 +437,341 @@ namespace SERVER
             // Save the game to the database
             await _gameRepository.SaveGameAsync(Game);
         }
+
+
+
+
+
+        /// <summary>
+        /// Draw the legal moves on the screen for the chosen piece
+        /// </summary>
+        /// <param name="chosenPiece">The chosen piece</param>
+        /// <param name="boardRow">The current piece row</param>
+        /// <param name="boardCol">The current piece col</param>
+        private void ShowLegalMovesForChessPiece(ChessPieceType chosenPiece, int boardRow, int boardCol)
+        {
+            switch (chosenPiece)
+            {
+                case ChessPieceType.BPawn:
+                    ShowLegalMovesForPawn(boardRow, boardCol, chosenPiece);
+                    break;
+                case ChessPieceType.BKing:
+                    ShowLegalMovesForKing(boardRow, boardCol);
+                    break;
+                case ChessPieceType.BKnight:
+                    ShowLegalMovesForKnight(boardRow, boardCol);
+                    break;
+                case ChessPieceType.BBishop:
+                    ShowLegalMovesForBishop(boardRow, boardCol);
+                    break;
+                case ChessPieceType.BCastle:
+                    ShowLegalMovesForCastle(boardRow, boardCol);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Draw the legal moves on the screen for the castle piece
+        /// </summary>
+        /// <param name="boardRow">The current row</param>
+        /// <param name="boardCol">The current col</param>
+        private void ShowLegalMovesForCastle(int boardRow, int boardCol)
+        {
+            Console.WriteLine("Castle clicked, location: [" + boardRow + ", " + boardCol + "]");
+
+            ShowLegalMovesForCastleInDirection(boardCol, boardRow, colDirection: 0, rowDirection: 1);
+            ShowLegalMovesForCastleInDirection(boardCol, boardRow, colDirection: 0, rowDirection: -1);
+            ShowLegalMovesForCastleInDirection(boardCol, boardRow, colDirection: 1, rowDirection: 0);
+            ShowLegalMovesForCastleInDirection(boardCol, boardRow, colDirection: -1, rowDirection: 0);
+        }
+
+        private void ShowLegalMovesForCastleInDirection(int boardCol, int boardRow, int colDirection, int rowDirection)
+        {
+            int newBoardRow = boardRow;
+            int newBoardCol = boardCol;
+
+            // Keep moving in the given direction until the edge of the board or blocked by a piece
+            while (true)
+            {
+                newBoardRow += rowDirection;
+                newBoardCol += colDirection;
+
+                // Check if the new position is within bounds
+                if (newBoardRow < 0 || newBoardRow >= boardLength || newBoardCol < 0 || newBoardCol >= boardWidth)
+                {
+                    break; // Out of bounds, stop checking further
+                }
+
+                ChessPieceType castlePiece = gameBoard[boardRow, boardCol],
+                    targetLocation = gameBoard[newBoardRow, newBoardCol];
+
+                // If the square is empty, color it as a legal move
+                if (targetLocation == ChessPieceType.None)
+                {
+                    ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, boardRow: newBoardRow, boardCol: newBoardCol);
+                }
+                // Check what kind of piecee is on the square
+                else if (!gameMng.IsSameColor(piece: castlePiece, targetPiece: targetLocation))
+                {
+                    ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                    break;
+                }
+                else
+                {
+                    break; // Stop if the square is blocked by a piece
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draw the legal moves on the screen for the bishop piece
+        /// </summary>
+        /// <param name="boardRow">The current row</param>
+        /// <param name="boardCol">The current col</param>
+        private void ShowLegalMovesForBishop(int boardRow, int boardCol)
+        {
+            Console.WriteLine("Bishop clicked, location: [" + boardRow + ", " + boardCol + "]");
+
+            ResetBoard();
+            Graphics pieceGraphics = this.CreateGraphics();
+            Bitmap chosenPieceBitmap = new Bitmap(this.ClientRectangle.Width, this.ClientRectangle.Height);
+            Graphics chosenPieceGraphics = Graphics.FromImage(chosenPieceBitmap);
+            ChessPieceType[,] gameBoard = gameMng.GameBoard;
+
+            // Diagonal moves (4 directions) for Bishop
+            int[] directions = new int[] { -1, 1 };
+            foreach (int rowDirection in directions)
+            {
+                foreach (int colDirection in directions)
+                {
+                    int newBoardRow = boardRow, newBoardCol = boardCol;
+
+                    while (true)
+                    {
+                        newBoardRow += rowDirection;
+                        newBoardCol += colDirection;
+
+                        if (newBoardRow < 0 || newBoardRow >= boardLength || newBoardCol < 0 || newBoardCol >= boardWidth)
+                            break;
+
+                        ChessPieceType bishopPiece = gameBoard[boardRow, boardCol],
+                            targetLocation = gameBoard[newBoardRow, newBoardCol];
+
+                        // Check if the square is empty
+                        if (targetLocation == ChessPieceType.None)
+                        {
+                            ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, newBoardRow, newBoardCol);
+                        }
+                        else if (!gameMng.IsSameColor(piece: bishopPiece, targetPiece: targetLocation))
+                        {
+                            ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                            break;
+                        }
+                        else
+                        {
+                            break; // Stop if the square is blocked by a piece
+                        }
+                    }
+                }
+            }
+
+            pieceGraphics.DrawImage(chosenPieceBitmap, 0, 0);
+            PlacePiecesOnBoard(pieceGraphics);
+        }
+
+        /// <summary>
+        /// Draw the legal moves on the screen for the knight piece
+        /// </summary>
+        /// <param name="boardRow">The current row</param>
+        /// <param name="boardCol">The current col</param>
+        private void ShowLegalMovesForKnight(int boardRow, int boardCol)
+        {
+            Console.WriteLine("Knight clicked, location: [" + boardRow + ", " + boardCol + "]");
+
+            ResetBoard();
+            Graphics pieceGraphics = this.CreateGraphics();
+            Bitmap chosenPieceBitmap = new Bitmap(this.ClientRectangle.Width, this.ClientRectangle.Height);
+            Graphics chosenPieceGraphics = Graphics.FromImage(chosenPieceBitmap);
+            ChessPieceType[,] gameBoard = gameMng.GameBoard;
+            // 8 possible L-shaped moves for Knight
+            int[] rowMoves = new int[] { -2, -1, 1, 2, 2, 1, -1, -2 };
+            int[] colMoves = new int[] { 1, 2, 2, 1, -1, -2, -2, -1 };
+
+            for (int i = 0; i < 8; i++)
+            {
+                int newBoardRow = boardRow + rowMoves[i];
+                int newBoardCol = boardCol + colMoves[i];
+
+                if (newBoardRow >= 0 && newBoardRow < boardLength && newBoardCol >= 0 && newBoardCol < boardWidth)
+                {
+                    ChessPieceType knightPiece = gameBoard[boardRow, boardCol],
+                        targetLocation = gameBoard[newBoardRow, newBoardCol];
+
+                    // Check if the square is empty
+                    if (targetLocation == ChessPieceType.None)
+                    {
+                        ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, newBoardRow, newBoardCol);
+                    }
+                    // Check what kind of piecee is on the square
+                    else if (!gameMng.IsSameColor(piece: knightPiece, targetPiece: targetLocation))
+                    {
+                        ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                    }
+                }
+            }
+
+            pieceGraphics.DrawImage(chosenPieceBitmap, 0, 0);
+            PlacePiecesOnBoard(pieceGraphics);
+        }
+
+        /// <summary>
+        /// Draw the legal moves on the screen for the king piece
+        /// </summary>
+        /// <param name="boardRow">The current row</param>
+        /// <param name="boardCol">The current col</param>
+        private void ShowLegalMovesForKing(int boardRow, int boardCol)
+        {
+            Console.WriteLine("King clicked, location: [" + boardRow + ", " + boardCol + "]");
+
+            ResetBoard();
+            Graphics pieceGraphics = this.CreateGraphics();
+            Bitmap chosenPieceBitmap = new Bitmap(this.ClientRectangle.Width, this.ClientRectangle.Height);
+            Graphics chosenPieceGraphics = Graphics.FromImage(chosenPieceBitmap);
+            ChessPieceType[,] gameBoard = gameMng.GameBoard;
+
+            for (int newBoardRow = boardRow - 1; newBoardRow <= boardRow + 1; newBoardRow++)
+            {
+                for (int newBoardCol = boardCol - 1; newBoardCol <= boardCol + 1; newBoardCol++)
+                {
+                    if (newBoardRow == boardRow && newBoardCol == boardCol)
+                    {
+                        continue;
+                    }
+                    if (newBoardRow < 0 || newBoardRow >= boardLength)
+                    {
+                        continue;
+                    }
+                    if (newBoardCol < 0 || newBoardCol >= boardWidth)
+                    {
+                        continue;
+                    }
+
+                    ChessPieceType KingPiece = gameBoard[boardRow, boardCol],
+                        targetLocation = gameBoard[newBoardRow, newBoardCol];
+
+                    // Check if the square is empty
+                    if (targetLocation == ChessPieceType.None)
+                    {
+                        ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, newBoardRow, newBoardCol);
+                    }
+                    // Check what kind of piece is on the square
+                    else if (!gameMng.IsSameColor(piece: KingPiece, targetPiece: targetLocation))
+                    {
+                        ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                    }
+
+                }
+            }
+            pieceGraphics.DrawImage(chosenPieceBitmap, 0, 0);
+            PlacePiecesOnBoard(pieceGraphics);
+        }
+
+        /// <summary>
+        /// Draw the legal moves on the screen for the pawn piece
+        /// </summary>
+        /// <param name="boardRow">The current row</param>
+        /// <param name="boardCol">The current col</param>
+        /// <param name="pawnType"></param>
+        private void ShowLegalMovesForPawn(int boardRow, int boardCol, ChessPieceType pawnType)
+        {
+            Console.WriteLine("Pawn clicked, location: [" + boardRow + ", " + boardCol + "]");
+
+            ResetBoard();
+            Graphics pieceGraphics = this.CreateGraphics();
+            Bitmap chosenPieceBitmap = new Bitmap(this.ClientRectangle.Width, this.ClientRectangle.Height);
+            Graphics chosenPieceGraphics = Graphics.FromImage(chosenPieceBitmap);
+            ChessPieceType[,] gameBoard = gameMng.GameBoard;
+
+            int direction = (pawnType == ChessPieceType.WPawn) ? -1 : 1;
+            int startRow = (pawnType == ChessPieceType.WPawn) ? 6 : 1;
+
+            int newBoardRow = boardRow + direction;
+
+            // Move forward by 1 square
+            if (newBoardRow >= 0 && newBoardRow < boardLength)
+            {
+                ChessPieceType targetLocation = gameBoard[newBoardRow, boardCol];
+
+                if (targetLocation == ChessPieceType.None)
+                {
+                    ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, newBoardRow, boardCol);
+                }
+            }
+
+            // Special move: Pawn can move 2 squares from its initial position
+            if (boardRow == startRow)
+            {
+                newBoardRow = boardRow + (2 * direction);
+                if (gameBoard[newBoardRow, boardCol] == ChessPieceType.None)
+                {
+                    ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, boardRow + (2 * direction), boardCol);
+                }
+            }
+
+            if (boardRow >= 0 && boardRow < boardLength)
+            {
+                // Horizontal left (to the left side of the board)
+                if (boardCol - 1 >= 0)
+                {
+                    if (gameBoard[boardRow, boardCol - 1] == ChessPieceType.None) // The square is empty
+                    {
+                        ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, boardRow, boardCol - 1);
+                    }
+                }
+
+                // Horizontal right (to the right side of the board)
+                if (boardCol + 1 < boardWidth)
+                {
+                    if (gameBoard[boardRow, boardCol + 1] == ChessPieceType.None) // The square is empty
+                    {
+                        ColorLegalMoves(chosenPieceGraphics, moveColor: moveColor, boardRow, boardCol + 1);
+                    }
+                }
+            }
+
+            int newBoardCol = boardCol - 1; // Check left side first
+            // Capture diagonally
+            if (newBoardRow >= 0 && newBoardRow < boardLength)
+            {
+                ChessPieceType pawnPiece = gameBoard[boardRow, boardCol],
+                    targetLocation = gameBoard[newBoardRow, boardCol];
+
+                // Capture left diagonally
+                if (newBoardCol >= 0)
+                {
+                    if (targetLocation != ChessPieceType.None)
+                    {
+                        if (!gameMng.IsSameColor(piece: pawnType, targetPiece: targetLocation))   // Not the same color
+                        {
+                            ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                        }
+                    }
+                }
+
+                newBoardCol = boardCol + 1;
+
+                // Capture right diagonally
+                if (newBoardCol < boardWidth && targetLocation != ChessPieceType.None &&
+                    !gameMng.IsSameColor(piece: pawnType, targetPiece: targetLocation)) // Not the same color
+                {
+                    ColorLegalMoves(chosenPieceGraphics, moveColor: attackColor, newBoardRow, newBoardCol);
+                }
+            }
+
+            pieceGraphics.DrawImage(chosenPieceBitmap, 0, 0);
+            PlacePiecesOnBoard(pieceGraphics);
+        }
+
+
     }
 }
