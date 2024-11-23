@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SERVER.Models;
 using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations;
 using static SERVER.GameManager;
 
 namespace SERVER.API
@@ -120,6 +121,7 @@ namespace SERVER.API
             });
         }
 
+
         // Get: api/Game/move/server/{playerId}
         [HttpGet("move/server/{playerId}")]
         public IActionResult GetServerMove(int playerId)
@@ -139,6 +141,32 @@ namespace SERVER.API
                 
             });
         }
+
+
+        // PUT: api/Game/finish/{playerId}
+        [HttpPut("finish/{playerId}")]
+        public async Task<IActionResult> PutGameOver(int playerId, [FromBody] GameOverRequest request)
+        {
+            foreach (var game in ActiveGames)
+            {
+                Console.WriteLine($"Active player ID: {game.Key}");
+            }
+            if (!ActiveGames.ContainsKey(playerId))
+            {
+                return NotFound("No active game found for this player.");
+            }
+            
+            // NEED TO DELETE THIS ACTIVE GAME I THINK?
+            var gameManager = ActiveGames[playerId];
+            // NEED TO SAVE THE GAME TO DB
+            await gameManager.EndGameAsync(_gameRepository, request.Result);
+            ActiveGames.Remove(playerId);
+
+            return Ok();
+        }
+
+
+
         public class MoveData
         {
             public int piece { get; set; }
@@ -146,6 +174,12 @@ namespace SERVER.API
             public int fromCol { get; set; }
             public int toRow { get; set; }
             public int toCol { get; set; }
+        }
+
+        public class GameOverRequest
+        {
+            [Required]
+            public GAME_RESULT Result { get; set; }
         }
     }
 }

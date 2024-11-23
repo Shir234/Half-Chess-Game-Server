@@ -8,7 +8,7 @@ namespace SERVER
 
         // Enum to identify game pieces
         public enum ChessPieceType { None = 0, WKing, BKing, WBishop, BBishop, WKnight, BKnight, WCastle, BCastle, WPawn, BPawn };
-
+        public enum GAME_RESULT { Win = 1, Tie, Lose = 0 };
 
         // FROM CONSTANCE - SAVE? DELETE?
         public static readonly int BoardLength = 8;
@@ -396,11 +396,17 @@ namespace SERVER
 
 
         /////////////////////////////////////////// NEW - END GAME ---> ADD TO DB ///////////////////////
-        public async Task EndGameAsync()
+        public async Task EndGameAsync(GameRepository _gameRepository, GAME_RESULT result)
         {
+            Console.WriteLine("ENDING GAME BEFORE SAVE:");
             var endTime = TimeOnly.FromDateTime(DateTime.Now);
             Game.Duration = (int)Math.Round((endTime - Game.StartTime).TotalMinutes);
+            Game.Result = (int)result;
 
+            Console.WriteLine($"START TIME: {Game.StartTime}");
+            Console.WriteLine($"end TIME: {endTime}");
+            Console.WriteLine($"DURATION: {endTime - Game.StartTime}");
+            Console.WriteLine($"DURATION TO MIN: {(endTime - Game.StartTime).TotalMinutes}");
             // Save the game to the database
             await _gameRepository.SaveGameAsync(Game);
         }

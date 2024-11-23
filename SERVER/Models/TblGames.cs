@@ -8,8 +8,11 @@
         public DateOnly Date { get; set; }                  // yyyy-mm-dd
         public int Duration { get; set; }
 
+        public int Result { get; set; }
+
 
         public TblPlayers Player { get; set; }
+
 
     }
 }
