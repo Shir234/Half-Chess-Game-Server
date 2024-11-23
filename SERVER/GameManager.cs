@@ -269,9 +269,11 @@ namespace SERVER
         /// <param name="toCol">The end col</param>
         public void MovePiece(ChessPieceType piece, int fromRow, int fromCol, int toRow, int toCol)
         {
+            Console.WriteLine($"Piece type = {piece}, moved from [{fromRow},{fromCol}] to [{toRow}, {toCol}");
             var removePiece = gamePiecesList.Find(p => p.Row == toRow && p.Col == toCol);
             if (removePiece != null)
             {
+                Console.WriteLine($"The piece ate {removePiece.PieceType}");
                 gamePiecesList.Remove(removePiece);
             }
 
@@ -693,15 +695,15 @@ namespace SERVER
                 {
                     movesListBasicList.Add((newBoardRow, boardCol));
                 }
-            }
 
-            // Special move: Pawn can move 2 squares from its initial position
-            if (boardRow == startRow)
-            {
-                newBoardRow = boardRow + (2 * direction);
-                if (gameBoard[newBoardRow, boardCol] == ChessPieceType.None)
+                // Special move: Pawn can move 2 squares from its initial position
+                if (boardRow == startRow)
                 {
-                    movesListBasicList.Add((newBoardRow, boardCol));
+                    newBoardRow = boardRow + (2 * direction);
+                    if (gameBoard[newBoardRow, boardCol] == ChessPieceType.None)
+                    {
+                        movesListBasicList.Add((newBoardRow, boardCol));
+                    }
                 }
             }
 
@@ -712,7 +714,7 @@ namespace SERVER
                 {
                     if (gameBoard[boardRow, boardCol - 1] == ChessPieceType.None) // The square is empty
                     {
-                        movesListBasicList.Add((newBoardRow, boardCol));
+                        movesListBasicList.Add((boardRow, boardCol - 1));
                     }
                 }
 
@@ -721,21 +723,23 @@ namespace SERVER
                 {
                     if (gameBoard[boardRow, boardCol + 1] == ChessPieceType.None) // The square is empty
                     {
-                        movesListBasicList.Add((newBoardRow, boardCol));
+                        movesListBasicList.Add((boardRow, boardCol + 1));
                     }
                 }
             }
+
 
             int newBoardCol = boardCol - 1; // Check left side first
             // Capture diagonally
             if (newBoardRow >= 0 && newBoardRow < boardLength)
             {
-                ChessPieceType pawnPiece = gameBoard[boardRow, boardCol],
-                    targetLocation = gameBoard[newBoardRow, boardCol];
+                ChessPieceType pawnPiece, targetLocation;
 
                 // Capture left diagonally
                 if (newBoardCol >= 0)
                 {
+                    pawnPiece = gameBoard[boardRow, boardCol];
+                    targetLocation = gameBoard[newBoardRow, newBoardCol];
                     if (targetLocation != ChessPieceType.None)
                     {
                         if (!IsSameColor(piece: pawnType, targetPiece: targetLocation))   // Not the same color
@@ -747,16 +751,19 @@ namespace SERVER
                 }
 
                 newBoardCol = boardCol + 1;
-
-                // Capture right diagonally
-                if (newBoardCol < boardWidth && targetLocation != ChessPieceType.None &&
-                    !IsSameColor(piece: pawnType, targetPiece: targetLocation)) // Not the same color
+                if (newBoardCol < boardWidth)
                 {
-                    movesListBasicList.Add((newBoardRow, newBoardCol));
-                    //movesListCaptureList.Add((newBoardRow, newBoardCol));
+                    targetLocation = gameBoard[newBoardRow, newBoardCol];
+
+                    // Capture right diagonally
+                    if (newBoardCol < boardWidth && targetLocation != ChessPieceType.None &&
+                        !IsSameColor(piece: pawnType, targetPiece: targetLocation)) // Not the same color
+                    {
+                        movesListBasicList.Add((newBoardRow, newBoardCol));
+                        //movesListCaptureList.Add((newBoardRow, newBoardCol));
+                    }
                 }
             }
-
         }
 
         int countMoves = 0;
@@ -767,7 +774,7 @@ namespace SERVER
             selectedPieceEndRow = -1;
             selectedPieceEndCol = -1;
             int pieceIndex = -1;
-
+            bool isMoveLegal = false;
             do
             {
                 Random random = new Random();
@@ -781,8 +788,7 @@ namespace SERVER
 
                 ShowLegalMovesForChessPiece(chosenPiece.PieceType, chosenPiece.Row, chosenPiece.Col);
                 int moveIndex = random.Next(0, movesListBasicList.Count);
-                Console.WriteLine($"MOVES LIST SIZE: {movesListBasicList.Count}");
-                Console.WriteLine($"MOVE INDEX: {moveIndex}");
+                Console.WriteLine($"MOVES LIST SIZE: {movesListBasicList.Count}. MOVE INDEX: {moveIndex}");
                 //Get the new piece location
 
                 if(movesListBasicList.Count > 0)
@@ -790,15 +796,19 @@ namespace SERVER
                     selectedPieceEndRow = movesListBasicList[moveIndex].Item1;
                     selectedPieceEndCol = movesListBasicList[moveIndex].Item2;
 
-                    if (IsMoveLegal(pieceType, selectedPieceStartRow, selectedPieceStartCol, selectedPieceEndRow, selectedPieceEndCol))
+                    if (!IsMoveLegal(pieceType, selectedPieceStartRow, selectedPieceStartCol, selectedPieceEndRow, selectedPieceEndCol))
                     {
-
-                        Console.WriteLine($" {++countMoves}THE MOVE IS LEGAL - SERVER");
+                        isMoveLegal = false;
+                        movesListBasicList.Clear();
+                        Console.WriteLine($" {++countMoves} THE MOVE IS ILLEGAL - SERVER");
                     }
+                    isMoveLegal = true;
                 }        
-            } while (movesListBasicList.Count < 1);
+            } while (movesListBasicList.Count < 1 || !isMoveLegal);
 
-            MovePiece(piece: pieceType, fromRow: selectedPieceStartRow, fromCol: selectedPieceStartCol, toRow: selectedPieceEndRow, toCol: selectedPieceEndCol);
+            MovePiece(piece: pieceType,
+                fromRow: selectedPieceStartRow, fromCol: selectedPieceStartCol,
+                toRow: selectedPieceEndRow, toCol: selectedPieceEndCol);
             gamePiecesList[pieceIndex].Row = selectedPieceEndRow;
             gamePiecesList[pieceIndex].Col = selectedPieceEndCol;
             movesListBasicList.Clear();
