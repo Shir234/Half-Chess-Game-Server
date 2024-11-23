@@ -16,6 +16,7 @@ namespace SERVER.Models
         public string Name { get; set; }
         
         [Required]
+        [MinLength(8), MaxLength(10)]
         //[RegularExpression(@"^0\d{9}$", ErrorMessage = "Phone number must be exactly 10 digits and start with 0")]
         public int Phone { get; set; }
 
